@@ -19,14 +19,14 @@ Running
 
 M-x pycoverage-mode
 
-M-x pycoveage-load-report
+M-x pycoverage-load-report
 
 Ideal Usage
 ===========
 
 One runs their tests using coverage.  Then they enter
 ``pycoverage-mode``.  That should look for a ``.coverage`` file (or
-the twill equivalent) and load the overview/results page in another
+the figleaf equivalent) and load the overview/results page in another
 buffer.  It will also highlight the current file (iff it's timestamp
 is <= ``.coverage`` timestamp.  Newer timestamp means no guarantees on
 output.) with coverage information.
@@ -42,7 +42,7 @@ Todo
   * Make report use normal coverage.py text output, since it's a
     little friendlier on the eyes (instead of reporting for every 
     group of lines in a file)
-  * Twill support
+  * Figleaf support
   * Nose integration?
 
 Thanks
