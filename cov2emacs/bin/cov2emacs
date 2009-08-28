@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+# Copyright (c) 2009 Matt Harrison
+
+import sys
+print sys.path
+import cov2emacslib
+
+if __name__ == '__main__':
+    sys.exit(cov2emacslib.main(sys.argv))

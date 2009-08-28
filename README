@@ -1,0 +1,51 @@
+pycoverage.el
+=============
+
+An emacs mode for reporting on coverage stats for python
+
+Installation
+============
+
+Load pycoverage.el
+
+
+Install cov2emacs using setuptools or virtualenv or distutils
+
+There should be ``.coverage`` file in your home directory.
+``cov2emacslib/__init__.py`` looks for it.
+
+Running
+=======
+
+M-x pycoverage-mode
+
+M-x pycoveage-load-report
+
+Ideal Usage
+===========
+
+One runs their tests using coverage.  Then they enter
+``pycoverage-mode``.  That should look for a ``.coverage`` file (or
+the twill equivalent) and load the overview/results page in another
+buffer.  It will also highlight the current file (iff it's timestamp
+is <= ``.coverage`` timestamp.  Newer timestamp means no guarantees on
+output.) with coverage information.
+
+Todo
+====
+
+  * Make it work!
+  * Use missing line numbers instead of covered lines
+  * Make pycoverage-load-report look for a ``.coverage`` file
+    recursively up the parents of the file
+  * Make ``cov2emacs`` accept location of ``.coverage`` file
+  * Make report use normal coverage.py text output, since it's a
+    little friendlier on the eyes (instead of reporting for every 
+    group of lines in a file)
+  * Twill support
+  * Nose integration?
+
+Thanks
+======
+
+  * rcov - for code to start from
