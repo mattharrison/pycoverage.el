@@ -14,6 +14,26 @@ Install cov2emacs using setuptools or virtualenv or distutils
 There should be ``.coverage`` file in your home directory.
 ``cov2emacslib/__init__.py`` looks for it.
 
+Flymake-mode usage
+=====================
+
+Add the following to your .emacs::
+  
+  (when (load "flymake" t)
+    (defun flymake-pycoverage-init ()
+       (list "cov2emacs" (list  "--flymake" "--python-file"  buffer-file-name))
+      )
+    (add-to-list 'flymake-allowed-file-name-masks
+  	       '("\\.py\\'" flymake-pycoverage-init)))
+  
+
+If you have a ``.coverage`` file in your home directory that has
+information for the current buffer, run::
+
+  M-x flymake-mode
+
+And it should highlight the missing lines
+
 Running
 =======
 

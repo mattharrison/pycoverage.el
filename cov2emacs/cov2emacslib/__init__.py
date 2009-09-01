@@ -67,7 +67,22 @@ class Coverage2Emacs(object):
             raise Exception('wrong filename %s' % cov_file)
         self.cov_file = cov_file
 
-    def to_emacs(self, fout=None, filenames=None):
+    def to_emacs_flymake_mode(self, filename, fout=None):
+        """
+        flymake mode output looks like this:
+        filename:lineno: Warning|Error (function):msg
+        """
+        fout = fout or sys.stdout
+        reporter = BasicReporter(self.cov_file)
+        for cu, statements, excluded, missing in reporter.report():
+            if cu.filename != filename:
+                # probably could filter earlier to speed things up
+                continue
+            for line in missing:
+                fout.write('%s:%s: Error Line not covered by test\n' %(cu.filename, line))
+
+            
+    def to_emacs_compile_mode(self, fout=None, filenames=None):
         """
         spit out something like this that emacs understands
 
@@ -143,16 +158,25 @@ def _test():
 def main(prog_args):
     parser = optparse.OptionParser(version=meta.__version__)
     parser.add_option('--coverage-file')
+    parser.add_option('--python-file', help='specify Python file to analyze')
+
+    group = optparse.OptionGroup(parser, "Flymake mode")
+    group.add_option('--flymake', action='store_true', help='spit out flymake compatible output (requires --python-file)')
+    parser.add_option_group(group)
+
     opt, args = parser.parse_args(prog_args)
     
-    # Remove hardcode
     if opt.coverage_file:
         c2e = Coverage2Emacs(opt.coverage_file)
     else:
         home_dir = os.path.expanduser('~')
         c2e = Coverage2Emacs(os.path.join(home_dir, '.coverage'))
-    c2e.to_emacs()
-    
+
+    if opt.flymake:
+        c2e.to_emacs_flymake_mode(opt.python_file)
+    else:
+        c2e.to_emacs_compile_mode()
+        
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
 
