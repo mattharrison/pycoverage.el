@@ -11,8 +11,11 @@ Load pycoverage.el
 
 Install cov2emacs using setuptools or virtualenv or distutils
 
-There should be ``.coverage`` file in your home directory.
-``cov2emacslib/__init__.py`` looks for it.
+There should be ``.coverage`` file in the directory of the module you
+want coverage reporting on (or the parents of that directory).  How
+you get it there is currently not solved by this tool, which only
+provides a way to view the coverage data in your editor.
+
 
 Flymake-mode usage
 =====================
@@ -27,12 +30,12 @@ Add the following to your .emacs::
   	       '("\\.py\\'" flymake-pycoverage-init)))
   
 
-If you have a ``.coverage`` file in your home directory that has
-information for the current buffer, run::
+Then run this on a file that has up to date coverage information for it.
 
   M-x flymake-mode
 
-And it should highlight the missing lines
+This will look for a ``.coverage`` file in the same directory (or the
+parents) of the buffer.  And it should highlight the missing lines
 
 Running
 =======
@@ -55,10 +58,10 @@ Todo
 ====
 
   * Make it work!
-  * Use flymake mode instead of/in combination with compile mode?
+  * Use flymake mode instead of/in combination with compile mode? - Initial Flymake DONE
   * Use missing line numbers instead of covered lines - DONE for coverage.py
   * Make pycoverage-load-report look for a ``.coverage`` file
-    recursively up the parents of the file
+    recursively up the parents of the file - DONE
   * Make ``cov2emacs`` accept location of ``.coverage`` file - DONE
   * Make report use normal coverage.py text output, since it's a
     little friendlier on the eyes (instead of reporting for every 
