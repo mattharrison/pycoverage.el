@@ -117,6 +117,25 @@ class Coverage2Emacs(object):
 
             yield filename, line, status
             prev_file = filename
+
+
+def find_coverage_file(start_file, file_to_find='.coverage'):
+    """
+    starting from start_file, look it its directory and go up the
+    parents until you find a matching file
+    """
+    start_path = os.path.abspath(start_file)
+    start_dir = os.path.dirname(start_path)
+    done = False
+    while not done:
+        possible = os.path.join(start_path, file_to_find)
+        if os.path.exists(possible):
+            return possible
+        elif start_path == os.path.dirname(start_path):
+            done = True
+        else:
+            start_path = os.path.dirname(start_path)
+    return None
             
 def combine_linenums(linenums):
     """
@@ -165,10 +184,15 @@ def main(prog_args):
     parser.add_option_group(group)
 
     opt, args = parser.parse_args(prog_args)
-    
+
+    c2e = None
     if opt.coverage_file:
         c2e = Coverage2Emacs(opt.coverage_file)
-    else:
+    elif opt.python_file:
+        cov = find_coverage_file(opt.python_file)
+        if cov:
+            c2e = Coverage2Emacs(cov)
+    if c2e is None:
         home_dir = os.path.expanduser('~')
         c2e = Coverage2Emacs(os.path.join(home_dir, '.coverage'))
 

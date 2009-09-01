@@ -109,12 +109,9 @@
 (defun pycoverage-load-coverage ()
   "Look for .coverage file"
   (interactive)
-  ;  (compile-internal (format "cov2emacs --file %s --coverage-file
-                                        ;  /home/matt/.coverage" (buffer-file-name))   ""
-  (compile-internal "cov2emacs"
-                    ""
-                    nil nil nil (lambda (x)
-                                  "*pycoverage results*"))
+    (compile-internal (format "cov2emacs --python-file %s" (buffer-file-name)) ""
+                      nil nil nil (lambda (x)
+                                    "*pycoverage results*"))
   )
 
 (provide 'pycoverage)
