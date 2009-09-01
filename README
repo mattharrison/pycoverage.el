@@ -35,10 +35,11 @@ Todo
 ====
 
   * Make it work!
-  * Use missing line numbers instead of covered lines
+  * Use flymake mode instead of/in combination with compile mode?
+  * Use missing line numbers instead of covered lines - DONE for coverage.py
   * Make pycoverage-load-report look for a ``.coverage`` file
     recursively up the parents of the file
-  * Make ``cov2emacs`` accept location of ``.coverage`` file
+  * Make ``cov2emacs`` accept location of ``.coverage`` file - DONE
   * Make report use normal coverage.py text output, since it's a
     little friendlier on the eyes (instead of reporting for every 
     group of lines in a file)

@@ -4,7 +4,9 @@
 import sys
 import optparse
 import os
-import cPickle as pickle
+
+from coverage.report import Reporter
+from coverage.control import coverage as cv
 
 import meta
 
@@ -12,6 +14,48 @@ COVERED = 'Error'#'Covered'
 IGNORED = 'Ignored'
 MISSED = 'Missed'
 
+class BasicReporter(Reporter):
+    """
+    Hacked subclass of coverage.py Reporter that instead of actually
+    doing anything, just yields the data.
+
+    Since the .coverage file only contains the line's covered we need
+    to use Coverage.py's logic to determine the 'missing' lines.
+    """
+    def __init__(self, report_file, ignore_errors=False):
+        coverage = cv(report_file)
+        coverage.use_cache(True)
+        coverage.load()
+        super(BasicReporter, self).__init__(coverage, ignore_errors)
+        
+    def report(self, morfs=None, directory=None, omit_prefixes=None):
+        for result in self.report_files(morfs, directory, omit_prefixes):
+            yield result
+
+    def report_files(self, morfs, directory=None,
+                     omit_prefixes=None):
+        """Run a reporting function on a number of morfs.
+
+        No callback function, just yield the cu, statements, excluded and missing
+        """
+        self.find_code_units(morfs, omit_prefixes)
+
+        self.directory = directory
+        if self.directory and not os.path.exists(self.directory):
+            os.makedirs(self.directory)
+
+        for cu in self.code_units:
+            try:
+                # don't filter relative!!!
+                # if not cu.relative:
+                #     continue
+                statements, excluded, missing, _ = self.coverage._analyze(cu)
+                yield (cu, statements, excluded, missing)
+            except KeyboardInterrupt:
+                raise
+            except:
+                if not self.ignore_errors:
+                    raise
 
 
 class Coverage2Emacs(object):
@@ -23,12 +67,6 @@ class Coverage2Emacs(object):
             raise Exception('wrong filename %s' % cov_file)
         self.cov_file = cov_file
 
-    def to_emacs_new(self, fout=None, filenames=None):
-        from coverage import control
-        cov = coverage(data_file=self.cov_file)
-        pass
-        
-        
     def to_emacs(self, fout=None, filenames=None):
         """
         spit out something like this that emacs understands
@@ -37,22 +75,18 @@ class Coverage2Emacs(object):
 
         Message can be Covered|Ignored|Missed
         """
-        fout = fout or sys.stdout
-        for filename, line, status in self.filter_old_files(self.data_tuples(filenames)):
-            fout.write('%s:%s:%s\n' %(filename, line, status))
-            
-    def data_tuples(self, filenames=None):
         filenames = filenames or []
-        fin = open(self.cov_file, 'r')
-        data = pickle.load(fin)
-        files = data['lines'].keys()
-        files.sort()
-        for filename in files:
+        fout = fout or sys.stdout
+        reporter = BasicReporter(self.cov_file)
+        # covert the report output to a more useful generator
+        data_iter = ((cu.filename, missing, 'MISSING') for cu, statements, excluded, missing in reporter.report())
+        filtered_names = self.filter_old_files(data_iter)
+        for filename, line, status in filtered_names:
             if filenames and filename not in filenames:
                 continue
-            for line in combine_linenums(data['lines'][filename]):
-                yield filename, line, COVERED
-
+            for line_chunk in combine_linenums(line):
+                fout.write('%s:%s:%s\n' %(filename, line_chunk, status))
+        
     
     def filter_old_files(self, data_iter):
         cov_date = os.stat(self.cov_file).st_mtime
@@ -108,9 +142,15 @@ def _test():
 
 def main(prog_args):
     parser = optparse.OptionParser(version=meta.__version__)
+    parser.add_option('--coverage-file')
     opt, args = parser.parse_args(prog_args)
-    # remove hardcode
-    c2e = Coverage2Emacs('~/.coverage')
+    
+    # Remove hardcode
+    if opt.coverage_file:
+        c2e = Coverage2Emacs(opt.coverage_file)
+    else:
+        home_dir = os.path.expanduser('~')
+        c2e = Coverage2Emacs(os.path.join(home_dir, '.coverage'))
     c2e.to_emacs()
     
 if __name__ == '__main__':

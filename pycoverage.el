@@ -14,6 +14,8 @@
 (define-derived-mode pycoverage-mode python-mode "Python-Cov"
   "Major mode for annotating Python scripts with coverage information"
   (setq truncate-lines t)
+  ;;  (and ruby-electric-mode (ruby-electric-mode -1))
+  (and (boundp 'pabbrev-mode) pabbrev-mode (pabbrev-mode -1))
   (suppress-keymap pycoverage-mode-map)
   (define-key pycoverage-mode-map "\C-i" 'pycoverage-next-tag)
   (define-key pycoverage-mode-map "\M-\C-i" 'pycoverage-previous-tag)
@@ -39,21 +41,26 @@
   (re-search-backward pycoverage-tag-regexp nil t n)
   (pycoverage-show-link)
   )
+(defvar pycoverage-link-tempbuffer " *pycoverage-link*")
 
-(defun pycoverage-visit-source ()
-  "If the current line contains text like '../src/program.rb:34', visit
-  that file in the other window and position point on that line."
-  (interactive)
-  (let* ((line (progn (looking-at pycoverage-tag-regexp) (match-string 1)))
-         (candidates (pycoverage-extract-file-lines line))
-         (file-line (pycoverage-select-file-line candidates)))
-    (cond (file-line
-           (run-hooks 'pycoverage-before-visit-source-hook)
-           (find-file (car file-line))
-           (goto-line (cadr file-line))
-           (run-hooks 'pycoverage-after-visit-source-hook))
-          (t
-           (error "No source location on line.")) )))
+(defun pycoverage-show-link ()
+  "Follow current LINK."
+  (let ((link (match-string 1))
+        (eol (point-at-eol)))
+    (save-excursion
+      (when (and link
+                 (re-search-backward "# \\(>>\\|<<\\) " (point-at-bol) t))
+        (while (re-search-forward pycoverage-tag-regexp eol t)
+          (let ((matched (match-string 1)))
+            (when (string= link matched)
+              (add-text-properties 0 (length matched) '(face highlight) matched))
+            (with-current-buffer (get-buffer-create pycoverage-link-tempbuffer)
+              (insert matched "\n"))))
+        (let (message-log-max)          ; inhibit *Messages*
+          (message "%s" (with-current-buffer pycoverage-link-tempbuffer
+                          (substring (buffer-string) 0 -1)))) ; chomp
+        (kill-buffer pycoverage-link-tempbuffer)))))
+
 
 ;; copied from jw-visit-source
 (defun pycoverage-extract-file-lines (line)
@@ -73,6 +80,7 @@
                   result)))
     result))
 
+
 (defun pycoverage-select-file-line (candidates)
   "Select a file/line candidate that references an existing file."
   (cond ((null candidates) nil)
@@ -80,11 +88,31 @@
         (t (pycoverage-select-file-line (cdr candidates))) ))
 
 
+(defun pycoverage-visit-source ()
+  "If the current line contains text like '../src/program.rb:34', visit
+  that file in the other window and position point on that line."
+  (interactive)
+  (let* ((line (progn (looking-at pycoverage-tag-regexp) (match-string 1)))
+
+         (candidates (pycoverage-extract-file-lines line))
+         (file-line (pycoverage-select-file-line candidates)))
+    (cond (file-line
+           (run-hooks 'pycoverage-before-visit-source-hook)
+           (find-file (car file-line))
+           (goto-line (cadr file-line))
+           (run-hooks 'pycoverage-after-visit-source-hook))
+          (t
+           (error "No source location on line.")) )))
+
+
 ;; matt stuff
 (defun pycoverage-load-coverage ()
   "Look for .coverage file"
   (interactive)
-  (compile-internal "cov2emacs" ""
+  ;  (compile-internal (format "cov2emacs --file %s --coverage-file
+                                        ;  /home/matt/.coverage" (buffer-file-name))   ""
+  (compile-internal "cov2emacs"
+                    ""
                     nil nil nil (lambda (x)
                                   "*pycoverage results*"))
   )
