@@ -3,6 +3,14 @@ pycoverage.el
 
 An emacs mode for reporting on coverage stats for python
 
+Dependencies
+============
+
+Coverage reporter for Python:
+
+  * coverage.py (currently we only support this)
+  * figleaf (support pending)
+
 Installation
 ============
 

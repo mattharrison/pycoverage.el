@@ -1,6 +1,6 @@
 # Copyright (c) 2009 Matt Harrison
-from distutils.core import setup
-#from setuptools import setup
+#from distutils.core import setup
+from setuptools import setup
 
 from cov2emacslib import meta
 
