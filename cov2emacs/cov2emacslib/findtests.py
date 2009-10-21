@@ -20,6 +20,7 @@ def get_coverage_for_function(function, startfile, cover_mech=None, fresh_covera
     nose_argv = ['-v'] + nose_test_cmds + ['-w', os.path.dirname(startfile)]
 
     if cover_mech == 'coverage':
+        # .coverage will be in the -w os.path.dirname(startfile) directory
         nose_argv.append('--with-coverage')
         if fresh_coverage:
             nose_argv.append('--cover-erase')
@@ -29,7 +30,7 @@ def get_coverage_for_function(function, startfile, cover_mech=None, fresh_covera
     
     print "RUNNING", " ".join(nose_argv)
     core.run(argv=nose_argv)
-
+    
 def get_nose_cmd(filename, classname, methodname, line_num):
     #module = os.path.basename(filename)[:-3]
     module = filename
