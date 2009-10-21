@@ -17,7 +17,7 @@ MISSED = 'Missed'
 class BasicReporter(Reporter):
     """
     Hacked subclass of coverage.py Reporter that instead of actually
-    doing anything, just yields the data.
+    doing anything just yields the data.
 
     Since the .coverage file only contains the line's covered we need
     to use Coverage.py's logic to determine the 'missing' lines.
