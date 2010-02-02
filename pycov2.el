@@ -1,6 +1,7 @@
 (require 'linum)
 
 (defvar pycov2-data nil "Coverage data for the buffer")
+(make-variable-buffer-local 'pycov2-data)
 
 (define-minor-mode pycov2-mode
   "Allow annotating the file with coverage information"
@@ -24,12 +25,14 @@
 (defun pycov2-line-format (line)
   (multiple-value-bind (face str coverage)
       (pcyov2-line-format line))
-
   )
 
 (defun pycov2-get-data (filename)
   (let* ((result (pycov2-run-script filename))
          )
+    (message "matt")
+    (message result)
+    (message "matt2")
     (setq pycov2-data nil)
     (mapcar (lambda (line)
               (if (not (equal line ""))
@@ -63,7 +66,7 @@
   )
 
 (defun pycov2-run-script (filename)
-  (shell-command-to-string (format "PYTHONPATH=/home/matt/work/emacs/pycoverage/cov2emacs/ /home/matt/work/emacs/pycoverage/cov2emacs/bin/cov2emacs --compile-mode --python-file %s"
+  (shell-command-to-string (format "PYTHONPATH=/home/matt/work/emacs/pycoverage/cov2emacs/ /home/matt/work/emacs/pycoverage/cov2emacs/bin/cov2emacs --compile-mode --python-file %s 2>/dev/null"
                                    filename)))
 
 (provide 'pycov2)

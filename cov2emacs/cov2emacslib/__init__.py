@@ -61,7 +61,6 @@ class BasicReporter(Reporter):
             except KeyboardInterrupt:
                 raise
             except CoverageException, e:
-                print "COV EXCEPTION",e
                 pass
             except:
                 if not self.ignore_errors:
