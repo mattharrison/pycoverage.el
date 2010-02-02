@@ -1,18 +1,24 @@
 #!/usr/bin/env python
-# Copyright (c) 2009 Matt Harrison
+# Copyright (c) 2009-2010 Matt Harrison
 
 import sys
 import optparse
 import os
+import logging
 
 from coverage.report import Reporter
+from coverage.misc import CoverageException
 from coverage.control import coverage as cv
 
 import meta
+import findtests
 
 COVERED = 'Error'#'Covered'
 IGNORED = 'Ignored'
 MISSED = 'Missed'
+
+logging.basicConfig(level=logging.DEBUG, filename='.cov2emacs.log')
+LOG = logging
 
 class BasicReporter(Reporter):
     """
@@ -49,10 +55,14 @@ class BasicReporter(Reporter):
                 # don't filter relative!!!
                 # if not cu.relative:
                 #     continue
-                statements, excluded, missing, _ = self.coverage._analyze(cu)
-                yield (cu, statements, excluded, missing)
+                #statements, excluded, missing, _ = self.coverage._analyze(cu)
+                analysis_instance = self.coverage._analyze(cu)
+                yield (cu, analysis_instance.statements, analysis_instance.excluded, analysis_instance.missing)
             except KeyboardInterrupt:
                 raise
+            except CoverageException, e:
+                print "COV EXCEPTION",e
+                pass
             except:
                 if not self.ignore_errors:
                     raise
@@ -82,7 +92,7 @@ class Coverage2Emacs(object):
                 fout.write('%s:%s: Error Line not covered by test\n' %(cu.filename, line))
 
             
-    def to_emacs_compile_mode(self, fout=None, filenames=None):
+    def to_emacs_compile_mode(self, fout=None, filenames=None, combine_nums=False):
         """
         spit out something like this that emacs understands
 
@@ -90,21 +100,27 @@ class Coverage2Emacs(object):
 
         Message can be Covered|Ignored|Missed
         """
-        filenames = filenames or []
+        filenames = [os.path.abspath(f) for f in filenames] or []
+        LOG.debug('compile_mode filenames: %s' % filenames)
         fout = fout or sys.stdout
         reporter = BasicReporter(self.cov_file)
         # covert the report output to a more useful generator
         data_iter = ((cu.filename, missing, 'MISSING') for cu, statements, excluded, missing in reporter.report())
         filtered_names = self.filter_old_files(data_iter)
         for filename, line, status in filtered_names:
+            #print "F", filename, filenames
             if filenames and filename not in filenames:
                 continue
-            for line_chunk in combine_linenums(line):
-                fout.write('%s:%s:%s\n' %(filename, line_chunk, status))
-        
+            if combine_nums: 
+                for line_chunk in combine_linenums(line):
+                    fout.write('%s:%s:%s\n' %(filename, line_chunk, status))
+            else:
+                for num in line:
+                    fout.write('%s:%s:%s\n' %(filename, num, status))
     
     def filter_old_files(self, data_iter):
         cov_date = os.stat(self.cov_file).st_mtime
+        LOG.debug("FILTER COV MTIME %s " % cov_date)
         file_date = None
         prev_file = None
         for filename, line, status in data_iter:
@@ -112,6 +128,7 @@ class Coverage2Emacs(object):
                 file_date = os.stat(filename).st_mtime
 
             if file_date > cov_date:
+                LOG.debug("FILTERING %s date: %s" % (filename, file_date))
                 # assume that file has been tweeked and data is wrong
                 continue
 
@@ -128,13 +145,19 @@ def find_coverage_file(start_file, file_to_find='.coverage'):
     start_dir = os.path.dirname(start_path)
     done = False
     while not done:
+        #LOG.debug('looking for coverage in %s' % start_path)
         possible = os.path.join(start_path, file_to_find)
+        LOG.debug('looking for coverage in (%s)' % possible)
         if os.path.exists(possible):
+            LOG.debug('coverage file:%s' % possible)
             return possible
         elif start_path == os.path.dirname(start_path):
+            LOG.debug("1")
             done = True
         else:
+            LOG.debug("2")
             start_path = os.path.dirname(start_path)
+    LOG.debug('no coverage file!')
     return None
             
 def combine_linenums(linenums):
@@ -183,23 +206,37 @@ def main(prog_args):
     group.add_option('--flymake', action='store_true', help='spit out flymake compatible output (requires --python-file)')
     parser.add_option_group(group)
 
+    compile_group = optparse.OptionGroup(parser, "Compile mode")
+    group.add_option('--compile-mode', action='store_true', help='spit out compile compatible output')
+    parser.add_option_group(compile_group)
+
+    func_group = optparse.OptionGroup(parser, "Run a function with coverage")
+    func_group.add_option('--function-name', help='Report on coverage for tests for this function (requires --python-file)')
+    parser.add_option_group(func_group)
+    
     opt, args = parser.parse_args(prog_args)
 
-    c2e = None
-    if opt.coverage_file:
-        c2e = Coverage2Emacs(opt.coverage_file)
-    elif opt.python_file:
+    if opt.flymake or opt.compile_mode:
+        c2e = None
+        if opt.coverage_file:
+            c2e = Coverage2Emacs(opt.coverage_file)
+        elif opt.python_file:
+            cov = find_coverage_file(opt.python_file)
+            if cov:
+                c2e = Coverage2Emacs(cov)
+        if c2e is None:
+            home_dir = os.path.expanduser('~')
+            c2e = Coverage2Emacs(os.path.join(home_dir, '.coverage'))
+
+    if opt.function_name:
+        findtests.get_coverage_for_function(opt.function_name, opt.python_file)
         cov = find_coverage_file(opt.python_file)
-        if cov:
-            c2e = Coverage2Emacs(cov)
-    if c2e is None:
-        home_dir = os.path.expanduser('~')
-        c2e = Coverage2Emacs(os.path.join(home_dir, '.coverage'))
+        c2e = Coverage2Emacs(cov)
 
     if opt.flymake:
         c2e.to_emacs_flymake_mode(opt.python_file)
-    else:
-        c2e.to_emacs_compile_mode()
+    elif opt.compile_mode:
+        c2e.to_emacs_compile_mode(filenames=[opt.python_file])
         
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

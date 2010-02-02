@@ -54,7 +54,13 @@ class TestFinder(object):
             pass
 
     def candidate_files(self, callback):
-        # start from start_file, work up to setup.py
+        """
+        algorithm to find "test" files:
+         * start from start_file, work up to setup.py
+         * from that directory call os.path.walk using callback
+
+        callback takes a list as it's 3rd arg to collect files in
+        """
         
         parent_dir = os.path.dirname(self.start_file)
 
@@ -113,8 +119,8 @@ def _get_class(line, cur_class):
                 
 def walk_callback(keep, dirname, fnames):
     """
-    return any file that has test in it's filename (including
-    directories)
+    return any file that has 'test' anywhere in its filename
+    (including directories)
     """
     for ignore in ['.svn']:
         if ignore in dirname:

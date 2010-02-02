@@ -14,10 +14,22 @@ Coverage reporter for Python:
 Installation
 ============
 
-Load pycoverage.el
+Put something like this in your .emacs
+
+(load-file "/home/matt/work/emacs/pycoverage/pycov2.el")
+(require 'linum)
+(require 'pycov2)
+(add-hook 'python-mode-hook
+(function (lambda ()
+(pycov2-mode)
+(linum-mode))))
 
 
 Install cov2emacs using setuptools or virtualenv or distutils
+
+Update pycov2-run-script with proper location of cov2emacs
+
+Load pycov2.el
 
 There should be ``.coverage`` file in the directory of the module you
 want coverage reporting on (or the parents of that directory).  How
@@ -25,32 +37,11 @@ you get it there is currently not solved by this tool, which only
 provides a way to view the coverage data in your editor.
 
 
-Flymake-mode usage
-=====================
-
-Add the following to your .emacs::
-  
-  (when (load "flymake" t)
-    (defun flymake-pycoverage-init ()
-       (list "cov2emacs" (list  "--flymake" "--python-file"  buffer-file-name))
-      )
-    (add-to-list 'flymake-allowed-file-name-masks
-  	       '("\\.py\\'" flymake-pycoverage-init)))
-  
-
-Then run this on a file that has up to date coverage information for it.
-
-  M-x flymake-mode
-
-This will look for a ``.coverage`` file in the same directory (or the
-parents) of the buffer.  And it should highlight the missing lines
-
 Running
 =======
 
-M-x pycoverage-mode
+M-x pycov2-mode
 
-M-x pycoverage-load-report
 
 Ideal Usage
 ===========
