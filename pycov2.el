@@ -30,9 +30,6 @@
 (defun pycov2-get-data (filename)
   (let* ((result (pycov2-run-script filename))
          )
-    (message "matt")
-    (message result)
-    (message "matt2")
     (setq pycov2-data nil)
     (mapcar (lambda (line)
               (if (not (equal line ""))
@@ -51,7 +48,6 @@
        (status (third data))
        )
     (when (equal status "MISSING")
-      (  message (format "MISSING %s" number))
       ;; add linenum to pycov2-data
       (add-to-list 'pycov2-data number)
       )
