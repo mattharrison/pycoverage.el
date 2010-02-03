@@ -58,6 +58,7 @@
   ;; if linenum in pycov2-data
   (if (member linenum pycov2-data)
       (propertize " " 'face '(:background "red" :foreground "red"))
+    (propertize " " 'face '())
     )
   )
 
