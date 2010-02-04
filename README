@@ -65,6 +65,11 @@ Todo
   * Make report use normal coverage.py text output, since it's a
     little friendlier on the eyes (instead of reporting for every 
     group of lines in a file)
+  * Put status in modeline
+    * Nothing - current data
+    * D - dirty
+    * N - no .coverage file available
+    * E - Error (see *messages*)
   * Figleaf support
   * Nose integration?
 
