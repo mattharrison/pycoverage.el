@@ -34,6 +34,12 @@ class BasicReporter(Reporter):
         coverage.load()
         super(BasicReporter, self).__init__(coverage, ignore_errors)
         
+    def report_filenames(self, filenames=None):
+        filenames = filenames or []
+        for filename in filenames:
+            yield self.coverage.analysis(filename)
+        
+
     def report(self, morfs=None, directory=None, omit_prefixes=None):
         for result in self.report_files(morfs, directory, omit_prefixes):
             yield result
@@ -90,8 +96,29 @@ class Coverage2Emacs(object):
             for line in missing:
                 fout.write('%s:%s: Error Line not covered by test\n' %(cu.filename, line))
 
-            
     def to_emacs_compile_mode(self, fout=None, filenames=None, combine_nums=False):
+        filenames = [os.path.abspath(f) for f in filenames] or []
+        LOG.debug('compile_mode filenames: %s' % filenames)
+        fout = fout or sys.stdout
+        reporter = BasicReporter(self.cov_file)
+        # covert the report output to a more useful generator
+        data_iter = []
+        for file, executable_lines, not_executed, summary in reporter.report_filenames(filenames):
+            # executable lines are lines that can "run" versus comments/etc
+            data_iter.append((file, not_executed, 'MISSING'))
+        filtered_names = self.filter_old_files(data_iter)
+        for filename, lines, status in filtered_names:
+            if filenames and filename not in filenames:
+                continue
+            if combine_nums: 
+                for line_chunk in combine_linenums(lines):
+                    fout.write('%s:%s:%s\n' %(filename, line_chunk, status))
+            else:
+                for num in lines:
+                    fout.write('%s:%s:%s\n' %(filename, num, status))
+            
+            
+    def to_emacs_compile_mode2(self, fout=None, filenames=None, combine_nums=False):
         """
         spit out something like this that emacs understands
 
@@ -99,6 +126,7 @@ class Coverage2Emacs(object):
 
         Message can be Covered|Ignored|Missed
         """
+
         filenames = [os.path.abspath(f) for f in filenames] or []
         LOG.debug('compile_mode filenames: %s' % filenames)
         fout = fout or sys.stdout
@@ -127,15 +155,48 @@ class Coverage2Emacs(object):
                 file_date = os.stat(filename).st_mtime
 
             if file_date > cov_date:
-                LOG.debug("FILTERING %s date: %s" % (filename, file_date))
+                LOG.debug("FILTERING %s date: %s > %s" % (filename, file_date, cov_date))
                 # assume that file has been tweeked and data is wrong
                 continue
 
             yield filename, line, status
             prev_file = filename
 
+def parent_dirs(start_file):
+    """
+    find parent dirs
+    >>> list(parent_dirs('/usr/lib/python'))
+    ['/usr/lib', '/usr', '/']
+    """
+    start_path = os.path.abspath(start_file)
+    start_dir = os.path.dirname(start_path)
+    done = False
+    while not done:
+        yield start_dir
+        next_dir = os.path.dirname(start_dir)
+        done = next_dir == start_dir
+        start_dir = next_dir
+
+def is_older(filename, other_mtime):
+    mtime = os.stat(filename).st_mtime
+    return mtime > other_mtime
 
 def find_coverage_file(start_file, file_to_find='.coverage'):
+    start_mtime = os.stat(start_file).st_mtime
+    for parent in parent_dirs(start_file):
+        potential = os.path.join(parent, file_to_find)
+        LOG.debug('Potential: %s' % potential)
+        if not os.path.exists(potential):
+            LOG.debug('No file: %s' % potential)
+            continue
+        if is_older(potential, start_mtime):
+            LOG.debug('FOUND! newer: %s' % potential)
+            return potential
+        else:
+            LOG.debug('OLDER: %s' % potential)
+    return None
+        
+def find_coverage_fileold(start_file, file_to_find='.coverage'):
     """
     starting from start_file, look it its directory and go up the
     parents until you find a matching file
@@ -146,7 +207,7 @@ def find_coverage_file(start_file, file_to_find='.coverage'):
     while not done:
         #LOG.debug('looking for coverage in %s' % start_path)
         possible = os.path.join(start_path, file_to_find)
-        LOG.debug('looking for coverage in (%s)' % possible)
+        LOG.debug('possible file coverage file: %s' % possible)
         if os.path.exists(possible):
             LOG.debug('coverage file:%s' % possible)
             return possible
@@ -212,9 +273,14 @@ def main(prog_args):
     func_group = optparse.OptionGroup(parser, "Run a function with coverage")
     func_group.add_option('--function-name', help='Report on coverage for tests for this function (requires --python-file)')
     parser.add_option_group(func_group)
-    
+
+    parser.add_option('-t', '--run-tests', action='store_true', help='run doctests')
     opt, args = parser.parse_args(prog_args)
 
+
+    if opt.run_tests:
+        _test()
+        return
     if opt.flymake or opt.compile_mode:
         c2e = None
         if opt.coverage_file:
@@ -235,7 +301,10 @@ def main(prog_args):
     if opt.flymake:
         c2e.to_emacs_flymake_mode(opt.python_file)
     elif opt.compile_mode:
-        c2e.to_emacs_compile_mode(filenames=[opt.python_file])
+        filenames = []
+        if opt.python_file:
+            filenames.append(opt.python_file)
+        c2e.to_emacs_compile_mode(filenames=filenames)
         
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
