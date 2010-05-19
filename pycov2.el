@@ -1,11 +1,19 @@
 (require 'linum)
 
 (defvar pycov2-data nil "Coverage data for the buffer")
+(defvar pycov2-mode-text " pycov(I)")
+(defvar pycov2-color-not-run "#ef2929")
+(defvar pycov2-color-no-data "#fce94f")
+(defvar pycov2-color-covered "")
+
+(make-variable-buffer-local 'pycov2-mode-text)
 (make-variable-buffer-local 'pycov2-data)
+(make-variable-buffer-local 'pycov2-cov-file)
+
 
 (define-minor-mode pycov2-mode
   "Allow annotating the file with coverage information"
-  :lighter " pycov "
+  :lighter pycov2-mode-text
   (if pycov2-mode
       (progn
         ;; (add-hook 'after-change-function 'pycov2-on-change nil t)
@@ -22,21 +30,38 @@
   (let* ((result (pycov2-get-data (buffer-file-name)))   
    )))
 
-(defun pycov2-line-format (line)
-  (multiple-value-bind (face str coverage)
-      (pcyov2-line-format line))
+
+(defun pycov2-refresh ()
+  "reload data for buffer"
+  (interactive )
+  (pycov2-get-data (buffer-file-name) pycov2-cov-file) 
   )
 
-(defun pycov2-get-data (filename)
-  (let* ((result (pycov2-run-script filename))
+(defun pycov2-rerun (cov_file)
+  "reload data for buffer using specified coverage file"
+  (interactive "FCoverage file:")
+  (setq pycov2-cov-file cov_file)
+  (pycov2-get-data (buffer-file-name) cov_file) 
+  )
+(defun pycov2-get-data (filename &optional cov_file )
+  (let* ((result (pycov2-run-better filename cov_file))
          )
     (setq pycov2-data nil)
-    (mapcar (lambda (line)
-              (if (not (equal line ""))
-                  (pycov2-process-script-line line)
-                )
-              ) (split-string result "[\n]+"))
+    (message "RESULT")
+    (message result)
+    (message "RESULT2")
+    (if result
+        (mapcar (lambda (line)
+                  (if (not (equal line ""))
+                      (pycov2-process-script-line line)
+                    )
+                  ) (split-string result "[\n]+"))
+      )
+
     )
+  ;; update mode-line
+  (setq pycov2-mode-text " pycov")
+  (force-mode-line-update)
   )
 
 (defun pycov2-process-script-line (line)
@@ -54,16 +79,36 @@
     )
   )
 
+;; (defun pycov2-line-format (line)
+;;   (multiple-value-bind (face str coverage)
+;;       (pcyov2-line-format line))
+;;   )
 (defun pycov2-line-format (linenum)
   ;; if linenum in pycov2-data
-  (if (member linenum pycov2-data)
-      (propertize " " 'face '(:background "red" :foreground "red"))
-    (propertize " " 'face '())
+   (if (member linenum pycov2-data)
+          (propertize " " 'face '(:background "#ef2929" :foreground "#ef2929"))
+        (if pycov2-data
+            ;; covered line
+            (propertize " " 'face '(:background " " :foreground " "))
+          (propertize " " 'face '(:background "#fcaf3e" :foreground "#fcaf3e"))
+          )
+        )
+  )
+
+(defun pycov2-run-better (filename &optional cov_file)
+  (let*
+      (
+       (command (if cov_file
+                    ( format "cov2emacs --compile-mode --python-file %s --coverage-file %s" filename cov_file)
+                  ( format "cov2emacs --compile-mode --python-file %s" filename)
+                  )))
+    (message command)
+    (shell-command-to-string command)
     )
   )
 
 (defun pycov2-run-script (filename)
-  (shell-command-to-string (format "PYTHONPATH=/home/matt/work/emacs/pycoverage/cov2emacs/ /home/matt/work/emacs/pycoverage/cov2emacs/bin/cov2emacs --compile-mode --python-file %s 2>/dev/null"
+  (shell-command-to-string (format "PYTHONPATH=/home/matt/work/emacs/pycoverage/cov2emacs/ /home/matt/work/emacs/pycoverage/cov2emacs/bin/cov2emacs --compile-mode --python-file %s 2>/tmp/junk"
                                    filename)))
 
 (provide 'pycov2)

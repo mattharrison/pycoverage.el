@@ -290,7 +290,8 @@ def main(prog_args):
             if cov:
                 c2e = Coverage2Emacs(cov)
         if c2e is None:
-            home_dir = os.path.expanduser('~')
+            print "NO COVERAGE FILE::"
+            return
             c2e = Coverage2Emacs(os.path.join(home_dir, '.coverage'))
 
     if opt.function_name:
