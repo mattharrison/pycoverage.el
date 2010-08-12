@@ -96,20 +96,24 @@ class Coverage2Emacs(object):
             for line in missing:
                 fout.write('%s:%s: Error Line not covered by test\n' %(cu.filename, line))
 
-    def to_emacs_compile_mode(self, fout=None, filenames=None, combine_nums=False):
+    def to_emacs_compile_mode(self, fout=None, filenames=None, combine_nums=False,
+                              status_line=True):
         filenames = [os.path.abspath(f) for f in filenames] or []
         LOG.debug('compile_mode filenames: %s' % filenames)
         fout = fout or sys.stdout
         reporter = BasicReporter(self.cov_file)
-        # covert the report output to a more useful generator
+        # convert the report output to a more useful generator
         data_iter = []
         for file, executable_lines, not_executed, summary in reporter.report_filenames(filenames):
             # executable lines are lines that can "run" versus comments/etc
-            data_iter.append((file, not_executed, 'MISSING'))
+            percent_executed = 100*(len(executable_lines) - len(not_executed) + 0.)/len(executable_lines)
+            data_iter.append((file, not_executed, 'MISSING', percent_executed))
         filtered_names = self.filter_old_files(data_iter)
-        for filename, lines, status in filtered_names:
+        for filename, lines, status, percent in filtered_names:
             if filenames and filename not in filenames:
                 continue
+            if status:
+                fout.write('SUCCESS:%d\n' % percent) 
             if combine_nums: 
                 for line_chunk in combine_linenums(lines):
                     fout.write('%s:%s:%s\n' %(filename, line_chunk, status))
@@ -150,7 +154,8 @@ class Coverage2Emacs(object):
         LOG.debug("FILTER COV MTIME %s " % cov_date)
         file_date = None
         prev_file = None
-        for filename, line, status in data_iter:
+        for data in data_iter:
+            filename = data[0]
             if prev_file is None or prev_file != filename:
                 file_date = os.stat(filename).st_mtime
 
@@ -159,7 +164,7 @@ class Coverage2Emacs(object):
                 # assume that file has been tweeked and data is wrong
                 continue
 
-            yield filename, line, status
+            yield data
             prev_file = filename
 
 def parent_dirs(start_file):

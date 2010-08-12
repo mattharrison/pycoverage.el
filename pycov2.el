@@ -43,26 +43,51 @@
   (setq pycov2-cov-file cov_file)
   (pycov2-get-data (buffer-file-name) cov_file) 
   )
+
 (defun pycov2-get-data (filename &optional cov_file )
   (let* ((result (pycov2-run-better filename cov_file))
+         (lines (split-string result "[\n]+"))
          )
     (setq pycov2-data nil)
-    (message "RESULT")
-    (message result)
-    (message "RESULT2")
+;    (message (car lines)  )
+;    (message "R3")
     (if result
-        (mapcar (lambda (line)
-                  (if (not (equal line ""))
-                      (pycov2-process-script-line line)
+        (progn
+                                        ; take status from first line
+          (pycov2-process-status (car lines))
+                                        ;(setq result (cdr result))
+          (mapcar (lambda (line)
+                    (if (not (equal line ""))
+                        (pycov2-process-script-line line)
+                      )
                     )
-                  ) (split-string result "[\n]+"))
+                  (cdr lines) 
+                  )
+          )
       )
-
     )
-  ;; update mode-line
-  (setq pycov2-mode-text " pycov")
-  (force-mode-line-update)
+
   )
+
+(defun pycov2-process-status (line)
+  ;; status like looks like this: SUCCESS:23
+  ;; where 23 is percent of coverage
+  (let*
+      ((data (split-string line ":"))
+       (stat (first data)))
+    (if (equal stat "SUCCESS")
+        (progn
+          ;; update mode-line
+          (setq pycov2-mode-text (format " pycov:%s" (second data)))
+          (force-mode-line-update)
+       )
+      (progn
+        (message "NOT SUCCESS")
+        )
+      )
+    )
+  )
+
 
 (defun pycov2-process-script-line (line)
   ;; line looks like this filepath:103:MISSING
