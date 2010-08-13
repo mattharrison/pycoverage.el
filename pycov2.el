@@ -16,7 +16,7 @@
   :lighter pycov2-mode-text
   (if pycov2-mode
       (progn
-        ;; (add-hook 'after-change-function 'pycov2-on-change nil t)
+         (add-hook 'after-change-function 'pycov2-on-change nil t)
         (setf linum-format 'pycov2-line-format)
         (pycov2-on-change-force))
     (setf linum-format 'dynamic)
@@ -75,14 +75,30 @@
   (let*
       ((data (split-string line ":"))
        (stat (first data)))
-    (if (equal stat "SUCCESS")
+    (;; set mode-line to error, others will overwrite
+     progn
+      (setq pycov2-mode-text " pycov(ERR)")
+      (force-mode-line-update)
+     )
+    (when (equal stat "SUCCESS")
         (progn
           ;; update mode-line
           (setq pycov2-mode-text (format " pycov:%s" (second data)))
           (force-mode-line-update)
-       )
+          )
+        )
+    (when (equal stat "OLD")
       (progn
-        (message "NOT SUCCESS")
+        ;; update mode-line
+        (setq pycov2-mode-text " pycov(OLD)")
+        (force-mode-line-update)
+        )
+      )
+    (when (equal stat "NO COVERAGE FILE")
+      (progn
+        ;; update mode-line
+        (setq pycov2-mode-text " pycov(?)")
+        (force-mode-line-update)
         )
       )
     )
@@ -104,10 +120,7 @@
     )
   )
 
-;; (defun pycov2-line-format (line)
-;;   (multiple-value-bind (face str coverage)
-;;       (pcyov2-line-format line))
-;;   )
+
 (defun pycov2-line-format (linenum)
   ;; if linenum in pycov2-data
    (if (member linenum pycov2-data)
@@ -132,8 +145,5 @@
     )
   )
 
-(defun pycov2-run-script (filename)
-  (shell-command-to-string (format "PYTHONPATH=/home/matt/work/emacs/pycoverage/cov2emacs/ /home/matt/work/emacs/pycoverage/cov2emacs/bin/cov2emacs --compile-mode --python-file %s 2>/tmp/junk"
-                                   filename)))
 
 (provide 'pycov2)

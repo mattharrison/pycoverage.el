@@ -98,6 +98,13 @@ class Coverage2Emacs(object):
 
     def to_emacs_compile_mode(self, fout=None, filenames=None, combine_nums=False,
                               status_line=True):
+        """
+        spit out something easy to parse in emacs ie:
+
+        filename:linenumber:message
+
+        Message can be Covered|Ignored|Missed
+        """
         filenames = [os.path.abspath(f) for f in filenames] or []
         LOG.debug('compile_mode filenames: %s' % filenames)
         fout = fout or sys.stdout
@@ -112,43 +119,21 @@ class Coverage2Emacs(object):
         for filename, lines, status, percent in filtered_names:
             if filenames and filename not in filenames:
                 continue
-            if status:
-                fout.write('SUCCESS:%d\n' % percent) 
+            if status == 'OLD':
+                fout.write('OLD:?\n')
+                # don't bother writing out stale data
+                continue
+            elif status:
+                fout.write('SUCCESS:%d\n' % percent)
             if combine_nums: 
                 for line_chunk in combine_linenums(lines):
                     fout.write('%s:%s:%s\n' %(filename, line_chunk, status))
             else:
                 for num in lines:
                     fout.write('%s:%s:%s\n' %(filename, num, status))
+
             
-            
-    def to_emacs_compile_mode2(self, fout=None, filenames=None, combine_nums=False):
-        """
-        spit out something like this that emacs understands
 
-        filename:linenumber:message
-
-        Message can be Covered|Ignored|Missed
-        """
-
-        filenames = [os.path.abspath(f) for f in filenames] or []
-        LOG.debug('compile_mode filenames: %s' % filenames)
-        fout = fout or sys.stdout
-        reporter = BasicReporter(self.cov_file)
-        # covert the report output to a more useful generator
-        data_iter = ((cu.filename, missing, 'MISSING') for cu, statements, excluded, missing in reporter.report())
-        filtered_names = self.filter_old_files(data_iter)
-        for filename, line, status in filtered_names:
-            #print "F", filename, filenames
-            if filenames and filename not in filenames:
-                continue
-            if combine_nums: 
-                for line_chunk in combine_linenums(line):
-                    fout.write('%s:%s:%s\n' %(filename, line_chunk, status))
-            else:
-                for num in line:
-                    fout.write('%s:%s:%s\n' %(filename, num, status))
-    
     def filter_old_files(self, data_iter):
         cov_date = os.stat(self.cov_file).st_mtime
         LOG.debug("FILTER COV MTIME %s " % cov_date)
@@ -162,8 +147,8 @@ class Coverage2Emacs(object):
             if file_date > cov_date:
                 LOG.debug("FILTERING %s date: %s > %s" % (filename, file_date, cov_date))
                 # assume that file has been tweeked and data is wrong
-                continue
-
+                data = list(data)
+                data[2] = "OLD"            
             yield data
             prev_file = filename
 
@@ -201,29 +186,7 @@ def find_coverage_file(start_file, file_to_find='.coverage'):
             LOG.debug('OLDER: %s' % potential)
     return None
         
-def find_coverage_fileold(start_file, file_to_find='.coverage'):
-    """
-    starting from start_file, look it its directory and go up the
-    parents until you find a matching file
-    """
-    start_path = os.path.abspath(start_file)
-    start_dir = os.path.dirname(start_path)
-    done = False
-    while not done:
-        #LOG.debug('looking for coverage in %s' % start_path)
-        possible = os.path.join(start_path, file_to_find)
-        LOG.debug('possible file coverage file: %s' % possible)
-        if os.path.exists(possible):
-            LOG.debug('coverage file:%s' % possible)
-            return possible
-        elif start_path == os.path.dirname(start_path):
-            LOG.debug("1")
-            done = True
-        else:
-            LOG.debug("2")
-            start_path = os.path.dirname(start_path)
-    LOG.debug('no coverage file!')
-    return None
+
             
 def combine_linenums(linenums):
     """
@@ -297,7 +260,6 @@ def main(prog_args):
         if c2e is None:
             print "NO COVERAGE FILE::"
             return
-            c2e = Coverage2Emacs(os.path.join(home_dir, '.coverage'))
 
     if opt.function_name:
         findtests.get_coverage_for_function(opt.function_name, opt.python_file)
