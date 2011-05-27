@@ -10,7 +10,7 @@ Coverage reporter for Python:
 
   * coverage.py (currently we only support this)
   * figleaf (support pending)
-  * nose (there is limited supported for testing a method/function 
+  * nose (there is limited supported for testing a method/function
     using nose)
 
 Installation
@@ -49,7 +49,9 @@ Ideal Usage
 If there is a .coverage file in the directory (or a parent) of the
 source file try to use it for coverage information.  Red highlights
 mean that lines were missed (Coverage percent for file is in mode
-line).  Orange means .coverage file is missing or OLD.
+line).  Orange means .coverage file is missing or OLD.  Purple means
+the cov2emacs file is not found, you need to put it in PATH or set
+pycov2-cov2emacs-cmd.
 
 pycov2-rerun will re-run the coverage stats for .coverage file located
 elsewhere.
@@ -67,13 +69,13 @@ Todo
     recursively up the parents of the file - DONE
   * Make ``cov2emacs`` accept location of ``.coverage`` file - DONE
   * Make report use normal coverage.py text output, since it's a
-    little friendlier on the eyes (instead of reporting for every 
+    little friendlier on the eyes (instead of reporting for every
     group of lines in a file)
   * Put status in modeline - DONE
     * Number - current coverage %
     * OLD - dirty
-    * ? - no .coverage file available 
-      Note that if coverage file has not been specified (pycov2-rerun) 
+    * ? - no .coverage file available
+      Note that if coverage file has not been specified (pycov2-rerun)
       it will skip over old .coverage files it finds  (see .cov2emacs.log)
     * ERR - Error (see *messages*)
   * Figleaf support
