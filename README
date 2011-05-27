@@ -62,6 +62,8 @@ function and run them.
 Todo
 ====
 
+  * Make invalidate data when you save file!
+
   * Make it work! Semi-DONE
   * Use flymake mode instead of/in combination with compile mode? - Initial Flymake DONE
   * Use missing line numbers instead of covered lines - DONE for coverage.py
