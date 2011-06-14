@@ -9,11 +9,13 @@
 (defvar pycov2-color-covered "")
 (defvar pycov2-cov2emacs-cmd "PYTHONPATH=~/.emacs.d/el-get/pycoverage/cov2emacs ~/.emacs.d/el-get/pycoverage/cov2emacs/bin/cov2emacs")
 (defvar pycov2-binary-installed nil)
+(defvar pycov2-debug-message nil)
 
 (make-variable-buffer-local 'pycov2-mode-text)
 (make-variable-buffer-local 'pycov2-data)
 (make-variable-buffer-local 'pycov2-cov-file)
 (make-variable-buffer-local 'pycov2-binary-installed)
+(make-variable-buffer-local 'pycov2-debug-message)
 
 
 (define-minor-mode pycov2-mode
@@ -21,24 +23,30 @@
   :lighter pycov2-mode-text
   (if pycov2-mode
       (progn
-         (add-hook 'after-change-function 'pycov2-on-change nil t)
+         (add-hook 'after-save-hook 'pycov2-on-change nil t)
          (setq pycov2-binary-installed (pycov2-exe-found pycov2-cov2emacs-cmd))
         (setf linum-format 'pycov2-line-format)
         (pycov2-on-change-force))
     (setf linum-format 'dynamic)
-    (remove-hook 'after-change-functions 'pycov2-on-change t)))
+    (remove-hook 'after-save-hook 'pycov2-on-change t)))
 
 (defun pycov2-exe-found (path)
   ;; spliting and taking last item in order to support something like this:
   ;; "PYTHONPATH=~/.emacs.d/el-get/pycoverage/cov2emacs ~/.emacs.d/el-get/pycoverage/cov2emacs/bin/cov2emacs"
-  (message (format "looking for %s" path))
+  (pycov2-message (format "looking for %s" path))
   (executable-find (car (last (split-string path " ")))))
+
+(defun pycov2-message (txt)
+  (if pycov2-debug-message
+      (message text)))
 
 (defun pycov2-on-change-force (&optional beg end len)
   (pycov2-on-change beg end len t))
 
-(defun pycov2-on-change (&optional ben end len force)
-  (let* ((result (pycov2-get-data (buffer-file-name))))))
+(defun pycov2-on-change (&optional beg end len force)
+  (progn
+    (pycov2-message "Rerunning PyCov")
+    (pycov2-get-data (buffer-file-name))))
 
 (defun pycov2-refresh ()
   "reload data for buffer"
@@ -106,7 +114,7 @@
   (cond
    ((not pycov2-binary-installed)
     (progn
-      (message "Missing cov2emacs in PATH")
+      (pycov2-message "Missing cov2emacs in PATH")
       (propertize " " 'face '(:background "#5c3566" :foreground "#5c3566")) )
     )
    ((member linenum pycov2-data)
@@ -119,7 +127,7 @@
    (t
     ;; some other issue (old data)
     (progn
-      (message "Coverage missing or old")
+      (pycov2-message "Coverage missing or old")
       (propertize " " 'face '(:background "#fcaf3e" :foreground "#fcaf3e")))
     )))
 
@@ -127,7 +135,7 @@
   (let* ((command (if cov_file
                       (format "%s --compile-mode --python-file %s --coverage-file %s" pycov2-cov2emacs-cmd filename cov_file)
                     (format "%s --compile-mode --python-file %s" pycov2-cov2emacs-cmd filename))))
-    (message command)
+    (pycov2-message command)
     (shell-command-to-string command)))
 
 (provide 'pycov2)
