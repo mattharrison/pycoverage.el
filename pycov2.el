@@ -17,7 +17,6 @@
 (make-variable-buffer-local 'pycov2-binary-installed)
 (make-variable-buffer-local 'pycov2-debug-message)
 
-
 (define-minor-mode pycov2-mode
   "Allow annotating the file with coverage information"
   :lighter pycov2-mode-text
@@ -25,8 +24,9 @@
       (progn
          (add-hook 'after-save-hook 'pycov2-on-change nil t)
          (setq pycov2-binary-installed (pycov2-exe-found pycov2-cov2emacs-cmd))
-        (setf linum-format 'pycov2-line-format)
-        (pycov2-on-change-force))
+	 (linum-mode t)
+	 (setf linum-format 'pycov2-line-format)
+	 (pycov2-on-change-force))
     (setf linum-format 'dynamic)
     (remove-hook 'after-save-hook 'pycov2-on-change t)))
 
