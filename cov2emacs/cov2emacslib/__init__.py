@@ -11,7 +11,7 @@ from coverage.misc import CoverageException
 from coverage.control import coverage as cv
 
 import meta
-import findtests
+#import findtests
 
 COVERED = 'Error'#'Covered'
 IGNORED = 'Ignored'
@@ -33,12 +33,12 @@ class BasicReporter(Reporter):
         coverage.use_cache(True)
         coverage.load()
         super(BasicReporter, self).__init__(coverage, ignore_errors)
-        
+
     def report_filenames(self, filenames=None):
         filenames = filenames or []
         for filename in filenames:
             yield self.coverage.analysis(filename)
-        
+
 
     def report(self, morfs=None, directory=None, omit_prefixes=None):
         for result in self.report_files(morfs, directory, omit_prefixes):
@@ -125,14 +125,14 @@ class Coverage2Emacs(object):
                 continue
             elif status:
                 fout.write('SUCCESS:%d\n' % percent)
-            if combine_nums: 
+            if combine_nums:
                 for line_chunk in combine_linenums(lines):
                     fout.write('%s:%s:%s\n' %(filename, line_chunk, status))
             else:
                 for num in lines:
                     fout.write('%s:%s:%s\n' %(filename, num, status))
 
-            
+
 
     def filter_old_files(self, data_iter):
         cov_date = os.stat(self.cov_file).st_mtime
@@ -148,7 +148,7 @@ class Coverage2Emacs(object):
                 LOG.debug("FILTERING %s date: %s > %s" % (filename, file_date, cov_date))
                 # assume that file has been tweeked and data is wrong
                 data = list(data)
-                data[2] = "OLD"            
+                data[2] = "OLD"
             yield data
             prev_file = filename
 
@@ -185,9 +185,9 @@ def find_coverage_file(start_file, file_to_find='.coverage'):
         else:
             LOG.debug('OLDER: %s' % potential)
     return None
-        
 
-            
+
+
 def combine_linenums(linenums):
     """
     >>> list(combine_linenums([1,2,3]))
@@ -215,15 +215,15 @@ def combine_linenums(linenums):
     if prev_num and prev_start:
         if prev_start == prev_num:
             yield '%d' % prev_num
-        else:    
+        else:
             yield '%d-%d' %(prev_start, num)
     elif prev_num:
         yield '%d' % prev_num
-            
+
 def _test():
     import doctest
     doctest.testmod()
-                              
+
 
 def main(prog_args):
     parser = optparse.OptionParser(version=meta.__version__)
@@ -262,6 +262,7 @@ def main(prog_args):
             return
 
     if opt.function_name:
+        import findtests  # requires nose
         findtests.get_coverage_for_function(opt.function_name, opt.python_file)
         cov = find_coverage_file(opt.python_file)
         c2e = Coverage2Emacs(cov)
@@ -273,7 +274,6 @@ def main(prog_args):
         if opt.python_file:
             filenames.append(opt.python_file)
         c2e.to_emacs_compile_mode(filenames=filenames)
-        
+
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
-
