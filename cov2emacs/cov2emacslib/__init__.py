@@ -9,9 +9,10 @@ import logging
 from coverage.report import Reporter
 from coverage.misc import CoverageException
 from coverage.control import coverage as cv
+from coverage.config import CoverageConfig
 
 import meta
-#import findtests
+
 
 COVERED = 'Error'#'Covered'
 IGNORED = 'Ignored'
@@ -32,6 +33,8 @@ class BasicReporter(Reporter):
         coverage = cv(report_file)
         coverage.use_cache(True)
         coverage.load()
+        self.config = CoverageConfig()
+
         super(BasicReporter, self).__init__(coverage, ignore_errors)
 
     def report_filenames(self, filenames=None):
@@ -39,18 +42,16 @@ class BasicReporter(Reporter):
         for filename in filenames:
             yield self.coverage.analysis(filename)
 
-
-    def report(self, morfs=None, directory=None, omit_prefixes=None):
-        for result in self.report_files(morfs, directory, omit_prefixes):
+    def report(self, morfs=None, directory=None):
+        for result in self.report_files(morfs, directory):
             yield result
 
-    def report_files(self, morfs, directory=None,
-                     omit_prefixes=None):
+    def report_files(self, morfs, directory=None):
         """Run a reporting function on a number of morfs.
 
         No callback function, just yield the cu, statements, excluded and missing
         """
-        self.find_code_units(morfs, omit_prefixes)
+        self.find_code_units(morfs, self.config)
 
         self.directory = directory
         if self.directory and not os.path.exists(self.directory):
