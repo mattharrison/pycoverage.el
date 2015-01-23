@@ -8,7 +8,8 @@
 (defvar pycov2-color-no-cov2emacs-binary "#5c3566")
 (defvar pycov2-color-covered "")
 (defvar pycov2-cov2emacs-cmd "PYTHONPATH=~/.emacs.d/el-get/pycoverage/cov2emacs ~/.emacs.d/el-get/pycoverage/cov2emacs/bin/cov2emacs")
-(defvar pycov2-binary-installed nil)
+(defvar pycov2-binary-installed nil) ; cov2emacs
+(defvar pycov2-coverage-installed nil) ; coverage
 (defvar pycov2-debug-message nil)
 
 (make-variable-buffer-local 'pycov2-mode-text)
@@ -16,6 +17,7 @@
 (make-variable-buffer-local 'pycov2-cov-file)
 (make-variable-buffer-local 'pycov2-binary-installed)
 (make-variable-buffer-local 'pycov2-debug-message)
+(make-variable-buffer-local 'pycov2-coverage-installed)
 
 (define-minor-mode pycov2-mode
   "Allow annotating the file with coverage information"
@@ -23,6 +25,7 @@
   (if pycov2-mode
       (progn
          (add-hook 'after-save-hook 'pycov2-on-change nil t)
+         (setq pycov2-coverage-installed (pycov2-coverage-exe-found))
          (setq pycov2-binary-installed (pycov2-exe-found pycov2-cov2emacs-cmd))
 	 (linum-mode t)
 	 (setf linum-format 'pycov2-line-format)
@@ -36,9 +39,16 @@
   (pycov2-message (format "looking for %s" path))
   (executable-find (car (last (split-string path " ")))))
 
+(defun pycov2-coverage-exe-found ()
+  (if (executable-find "coverage")
+      t
+    (progn
+      (message "MISSING coverage binary (please install)."))))
+
+
 (defun pycov2-message (txt)
   (if pycov2-debug-message
-      (message text)))
+      (message txt)))
 
 (defun pycov2-on-change-force (&optional beg end len)
   (pycov2-on-change beg end len t))
@@ -64,6 +74,7 @@
          (lines (split-string result "[\n]+")))
     (setq pycov2-data nil)
     (setq pycov2-binary-installed (pycov2-exe-found pycov2-cov2emacs-cmd))
+    (setq pycov2-coverage-installed (pycov2-coverage-exe-found))
     (if result
         (progn
           ;; take status from first line
@@ -81,7 +92,11 @@
     (progn
       ;; set mode-line to error, others will overwrite
       (setq pycov2-mode-text " pycov(ERR)")
-      (force-mode-line-update))
+      (force-mode-line-update)
+      (message (format "BIN INSTALLED: %s" pycov2-binary-installed))
+      (message (format "COV INSTALLED: %s" pycov2-coverage-installed)))
+    (when (not pycov2-coverage-installed)
+      (setq pycov2-mode-text (format " pycov:COV?" (second data))))
     (when (not pycov2-binary-installed)
       (setq pycov2-mode-text (format " pycov:EXE?" (second data))))
     (when (equal stat "SUCCESS")
@@ -115,27 +130,27 @@
    ((not pycov2-binary-installed)
     (progn
       (pycov2-message "Missing cov2emacs in PATH")
-      (propertize " " 'face '(:background "#5c3566" :foreground "#5c3566")) )
-    )
+      (propertize " " 'face '(:background "#5c3566" :foreground "#5c3566")) ))
+   ((not pycov2-coverage-installed)
+    (progn
+      (pycov2-message "Missing coverage in PATH")
+      (propertize " " 'face '(:background "#5c3566" :foreground "#5c3566")) ))
    ((member linenum pycov2-data)
-     (propertize " " 'face '(:background "#ef2929" :foreground "#ef2929"))
-    )
+     (propertize " " 'face '(:background "#ef2929" :foreground "#ef2929")))
    (pycov2-data
      ;; covered data
-     (propertize " " 'face '(:background " " :foreground " "))
-    )
+     (propertize " " 'face '(:background " " :foreground " ")))
    (t
     ;; some other issue (old data)
     (progn
       (pycov2-message "Coverage missing or old")
-      (propertize " " 'face '(:background "#fcaf3e" :foreground "#fcaf3e")))
-    )))
+      (propertize " " 'face '(:background "#fcaf3e" :foreground "#fcaf3e"))))))
 
 (defun pycov2-run-better (filename &optional cov_file)
   (let* ((command (if cov_file
                       (format "%s --compile-mode --python-file %s --coverage-file %s" pycov2-cov2emacs-cmd filename cov_file)
                     (format "%s --compile-mode --python-file %s" pycov2-cov2emacs-cmd filename))))
-    (pycov2-message command)
+    (message command)
     (shell-command-to-string command)))
 
 (provide 'pycov2)
