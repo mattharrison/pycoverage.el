@@ -39,11 +39,14 @@
   (pycov2-message (format "looking for %s" path))
   (executable-find (car (last (split-string path " ")))))
 
+
 (defun pycov2-coverage-exe-found ()
-  (if (executable-find "coverage")
+  ;; try to run cmd (if silent then success!!)
+  (if (equal (shell-command-to-string pycov2-cov2emacs-cmd) "")
       t
     (progn
-      (message "MISSING coverage binary (please install)."))))
+      (message "MISSING coverage library (please install or updata pycov2-cov2emacs-cmd).")
+      nil)))
 
 
 (defun pycov2-message (txt)
