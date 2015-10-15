@@ -114,7 +114,10 @@ class Coverage2Emacs(object):
         data_iter = []
         for file, executable_lines, not_executed, summary in reporter.report_filenames(filenames):
             # executable lines are lines that can "run" versus comments/etc
-            percent_executed = 100*(len(executable_lines) - len(not_executed) + 0.)/len(executable_lines)
+            if len(executable_lines) == 0:
+                percent_executed = 100
+            else:
+                percent_executed = 100*(len(executable_lines) - len(not_executed) + 0.)/len(executable_lines)
             data_iter.append((file, not_executed, 'MISSING', percent_executed))
         filtered_names = self.filter_old_files(data_iter)
         for filename, lines, status, percent in filtered_names:
