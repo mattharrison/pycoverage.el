@@ -8,7 +8,7 @@ import logging
 
 from coverage.report import Reporter
 from coverage.misc import CoverageException
-from coverage.control import coverage as cv
+from coverage.control import Coverage
 from coverage.config import CoverageConfig
 
 import meta
@@ -30,7 +30,7 @@ class BasicReporter(Reporter):
     to use Coverage.py's logic to determine the 'missing' lines.
     """
     def __init__(self, report_file, ignore_errors=False):
-        coverage = cv(report_file)
+        coverage = Coverage(report_file)
         coverage.use_cache(True)
         coverage.load()
         self.config = CoverageConfig()
