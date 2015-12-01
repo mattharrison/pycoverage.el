@@ -1,6 +1,6 @@
 # pycoverage.el
 
-An emacs mode for reporting inline on coverage stats for Python
+An emacs minor mode for reporting inline on coverage stats for Python
 
 # Dependencies
 
@@ -10,18 +10,18 @@ An emacs mode for reporting inline on coverage stats for Python
 
 Put something like this in your .emacs
 
-(require 'linum)
-(require 'pycov2)
+    (require 'linum)
+    (require 'pycov2)
 
-(defun my-coverage ()
-  (interactive)
-  (when (derived-mode-p 'python-mode)
-    (progn
-      (linum-mode)
-      (pycov2-mode)
+    (defun my-coverage ()
+      (interactive)
+      (when (derived-mode-p 'python-mode)
+        (progn
+          (linum-mode)
+          (pycov2-mode)
+          )
+        )
       )
-    )
-  )
 
 Install cov2emacs using setuptools or virtualenv or distutils
 
