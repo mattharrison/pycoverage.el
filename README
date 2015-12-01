@@ -1,17 +1,12 @@
-pycoverage.el
-=============
+# pycoverage.el
 
 An emacs mode for reporting inline on coverage stats for Python
 
-
-Dependencies
-============
+# Dependencies
 
 python-coverage>=4.0
 
-
-Installation
-============
+# Installation
 
 Put something like this in your .emacs
 
@@ -35,24 +30,16 @@ want coverage reporting on (or the parents of that directory).
 Note that if your file has been modified later than the .coverage file, it
 will be considered as stale and ignore it.
 
-
-Running
-=======
+# Running
 
 M-x pycov2-mode
-
-
-Ideal Usage
-===========
 
 If there is a .coverage file in the directory (or a parent) of the
 source file try to use it for coverage information.  Red highlights
 mean that lines were missed (Coverage percent for file is in mode
 line).
 
-
-Links
-===========
+# Links
 
 Forked from:
 
