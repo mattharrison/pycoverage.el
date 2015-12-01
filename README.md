@@ -4,7 +4,7 @@ An emacs mode for reporting inline on coverage stats for Python
 
 # Dependencies
 
-python-coverage>=4.0
+* python-coverage>=4.0
 
 # Installation
 
