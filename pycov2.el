@@ -1,6 +1,13 @@
-(require 'linum)
+;;; pycov2.el --- Support for coverage stats on Python 2.X  -*- lexical-binding: t; -*-
 
-(defvar pycov2-data nil "Coverage data for the buffer")
+;; Copyright (C) 2016  bertrand
+
+;; Author: bertrand(defvar pycov2-data nil "Coverage data for the buffer") <bertrand.lallau@gmail.com>
+;; URL: https://github.com/blallau/pycoverage.el
+;; Package-Version: 20160104
+;; Keywords: project, convenience
+;; Version: 0.0.1
+
 (defvar pycov2-mode-text " pycov2(I)")
 ;; Need to figure out how to use these without errors
 (defvar pycov2-cov2emacs-cmd "cov2emacs")
@@ -109,3 +116,5 @@
     (shell-command-to-string command)))
 
 (provide 'pycov2)
+
+;;; pycov2.el ends here
