@@ -11,14 +11,14 @@ An emacs minor mode for reporting inline on coverage stats for Python
 Put something like this in your .emacs
 
     (require 'linum)
-    (require 'pycov2)
+    (require 'pycoverage)
 
     (defun my-coverage ()
       (interactive)
       (when (derived-mode-p 'python-mode)
         (progn
           (linum-mode)
-          (pycov2-mode)
+          (pycoverage-mode)
           )
         )
       )
@@ -32,7 +32,7 @@ will be considered as stale and ignore it.
 
 # Running
 
-M-x pycov2-mode
+M-x pycoverage-mode
 
 If there is a .coverage file in the directory (or a parent) of the
 source file try to use it for coverage information.  Red highlights

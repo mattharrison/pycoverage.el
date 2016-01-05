@@ -3,5 +3,5 @@
 (source "marmalade" "http://marmalade-repo.org/packages/")
 
 (package "pycoverage" "0.0.1" "Support for coverage stats on Python 2.X")
-(package-file "pycov2.el")
-(files "pycov2.el")
+(package-file "pycoverage.el")
+(files "pycoverage.el")
