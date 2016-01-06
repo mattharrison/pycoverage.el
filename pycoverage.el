@@ -20,6 +20,7 @@
 (make-variable-buffer-local 'pycoverage-binary-installed)
 (make-variable-buffer-local 'pycoverage-debug-message)
 
+;;;###autoload
 (define-minor-mode pycoverage-mode
   "Allow annotating the file with coverage information"
   :lighter pycoverage-mode-text
