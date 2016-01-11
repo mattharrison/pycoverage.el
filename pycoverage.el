@@ -2,23 +2,19 @@
 
 ;; Copyright (C) 2016  bertrand
 
-;; Author: bertrand(defvar pycoverage-data nil "Coverage data for the buffer") <bertrand.lallau@gmail.com>
-;; URL: https://github.com/blallau/pycoverage.el
+;; Author: bertrand LALLAU <bertrand.lallau@gmail.com>
+;; URL: https://github.com/blallau/pycoverage
 ;; Package-Version: 20160104
 ;; Keywords: project, convenience
 ;; Version: 0.0.1
 
-(defvar pycoverage-mode-text " pycoverage(I)")
+(defvar-local pycoverage-mode-text " pycoverage(I)")
 ;; Need to figure out how to use these without errors
 (defvar pycoverage-cov2emacs-cmd "cov2emacs")
-(defvar pycoverage-binary-installed nil) ; cov2emacs
-(defvar pycoverage-debug-message t)
+(defvar-local pycoverage-binary-installed nil) ; cov2emacs
+(defvar-local pycoverage-debug-message t)
 
-(make-variable-buffer-local 'pycoverage-mode-text)
 (make-variable-buffer-local 'pycoverage-data)
-(make-variable-buffer-local 'pycoverage-cov-file)
-(make-variable-buffer-local 'pycoverage-binary-installed)
-(make-variable-buffer-local 'pycoverage-debug-message)
 
 ;;;###autoload
 (define-minor-mode pycoverage-mode
