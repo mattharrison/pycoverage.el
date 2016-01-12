@@ -29,8 +29,7 @@
            )
 	 (linum-mode t)
          (setf linum-format 'pycoverage-line-format)
-	 (pycoverage-on-change)
-         )
+	 (pycoverage-on-change))
     (setf linum-format 'dynamic)
     (remove-hook 'after-save-hook 'pycoverage-on-change)
     (linum-delete-overlays)))
@@ -71,8 +70,7 @@
     (progn
       ;; set mode-line to error, others will overwrite
       (setq pycoverage-mode-text " pycov(...)")
-      (force-mode-line-update)
-      )
+      (force-mode-line-update))
     (when (equal stat "SUCCESS")
       (progn
         ;; update mode-line
