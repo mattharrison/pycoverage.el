@@ -8,9 +8,9 @@
 ;; Keywords: project, convenience
 ;; Version: 0.0.1
 
-(defvar-local pycoverage-mode-text " pycoverage(I)")
+(defconst pycoverage-mode-text " pycoverage(I)")
 ;; Need to figure out how to use these without errors
-(defvar pycoverage-cov2emacs-cmd "cov2emacs")
+(defconst pycoverage-cov2emacs-cmd "cov2emacs")
 (defvar-local pycoverage-binary-installed nil) ; cov2emacs
 (defvar-local pycoverage-debug-message t)
 
