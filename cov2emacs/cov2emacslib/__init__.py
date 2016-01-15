@@ -11,7 +11,7 @@ from coverage.misc import CoverageException
 from coverage.control import Coverage
 from coverage.config import CoverageConfig
 
-import meta
+from . import meta
 
 
 COVERED = 'Error'#'Covered'
@@ -67,7 +67,7 @@ class BasicReporter(Reporter):
                 yield (cu, analysis_instance.statements, analysis_instance.excluded, analysis_instance.missing)
             except KeyboardInterrupt:
                 raise
-            except CoverageException, e:
+            except CoverageException as e:
                 pass
             except:
                 if not self.ignore_errors:
@@ -121,8 +121,8 @@ class Coverage2Emacs(object):
             data_iter.append((file, not_executed, 'MISSING', percent_executed))
         filtered_names = self.filter_old_files(data_iter)
         for filename, lines, status, percent in filtered_names:
-            if filenames and filename not in filenames:
-                continue
+            # if filenames and filename not in filenames:
+            #     continue
             if status == 'OLD':
                 fout.write('OLD:?\n')
                 # don't bother writing out stale data
@@ -262,7 +262,7 @@ def main(prog_args):
             if cov:
                 c2e = Coverage2Emacs(cov)
         if c2e is None:
-            print "NO COVERAGE FILE::"
+            sys.stderr.write("NO COVERAGE FILE::")
             return
 
     if opt.function_name:
