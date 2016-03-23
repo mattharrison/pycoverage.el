@@ -23,6 +23,15 @@ Put something like this in your .emacs
         )
       )
 
+I like to create a per project virtualenv. Use pip to install cov2emacs
+in that virtualenv.
+
+    $ source path/to/env/bin/activate
+    (env) $ cd pycoverage.el/cov2emacs
+    (env) $ pip install .
+
+
+
 Install cov2emacs using setuptools or virtualenv or distutils
 
 There should be ``.coverage`` file in the directory of the module you
