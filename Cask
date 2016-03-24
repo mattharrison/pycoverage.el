@@ -2,6 +2,6 @@
 (source "gnu" "http://elpa.gnu.org/packages/")
 (source "marmalade" "http://marmalade-repo.org/packages/")
 
-(package "pycoverage" "0.0.1" "Support for coverage stats on Python 2.X")
+(package "pycoverage" "0.0.2" "Support for coverage stats on Python 2.X and 3")
 (package-file "pycoverage.el")
 (files "pycoverage.el" "cov2emacs/bin/cov2emacs" "cov2emacs/cov2emacslib/__init__.py" "cov2emacs/cov2emacslib/meta.py")

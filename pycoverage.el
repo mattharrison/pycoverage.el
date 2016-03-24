@@ -1,12 +1,14 @@
-;;; pycoverage.el --- Support for coverage stats on Python 2.X  -*- lexical-binding: t; -*-
+;;; pycoverage.el --- Support for coverage stats on Python 2.X and 3  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016  bertrand
+;; Copyright (C) 2016 harrison, bertand
 
-;; Author: bertrand LALLAU <bertrand.lallau@gmail.com>
-;; URL: https://github.com/blallau/pycoverage
-;; Package-Version: 20160104
+;; Author: matt harrison
+;; URL: https://github.com/mattharrison/pycoverage.el
+;; Package-Version: 20160323
 ;; Keywords: project, convenience
-;; Version: 0.0.1
+;; Version: 0.0.2
+
+;; Thanks to bertrand.lallau@gmail.com for refactor
 
 (defconst pycoverage-mode-text " pycoverage(I)")
 ;; Need to figure out how to use these without errors

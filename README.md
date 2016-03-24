@@ -33,22 +33,27 @@ in that virtualenv.
 Use pyvenv mode to activate your virtualenv and you should be good to go.
 
 
-
-Install cov2emacs using setuptools or virtualenv or distutils
+# Running
 
 There should be ``.coverage`` file in the directory of the module you
 want coverage reporting on (or the parents of that directory).
 Note that if your file has been modified later than the .coverage file, it
 will be considered as stale and ignore it.
 
-# Running
 
-M-x pycoverage-mode
+   M-x pycoverage-mode
 
-If there is a .coverage file in the directory (or a parent) of the
-source file try to use it for coverage information.  Red highlights
+If there is a ``.coverage`` file in the directory (or a parent) of the
+source file, the mode will try to use it for coverage information.  Red highlights
 mean that lines were missed (Coverage percent for file is in mode
 line).
+
+The mode-line should have one of the following updates:
+
+* ``pycov(...)`` - Tool is running
+* ``pycov:NUM%`` - Percentage covered. Should see red in fringe where coverage is missing
+* ``pycov(OLD)`` - ``.coverage`` file is older than current buffer. Re-gen ``.coverage`` (ie by running tests with coverage turned on.) Run ``pycoverage-refresh`` to update coverage results
+* ``pycov(Err:no .coverage file)`` - There is no ``.coverage`` file. Re-gen ``.coverage`` (ie by running tests with coverage turned on.) Run ``pycoverage-refresh`` to update coverage results
 
 # Links
 
