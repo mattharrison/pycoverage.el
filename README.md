@@ -30,6 +30,8 @@ in that virtualenv.
     (env) $ cd pycoverage.el/cov2emacs
     (env) $ pip install .
 
+Use pyvenv mode to activate your virtualenv and you should be good to go.
+
 
 
 Install cov2emacs using setuptools or virtualenv or distutils

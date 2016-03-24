@@ -110,6 +110,12 @@
     (message command)
     (shell-command-to-string command)))
 
+(defun pycoverage-refresh ()
+  "reload data for buffer"
+  (interactive )
+  (pycoverage-get-data (buffer-file-name)))
+
+
 (provide 'pycoverage)
 
 ;;; pycoverage.el ends here
