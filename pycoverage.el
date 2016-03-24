@@ -7,6 +7,7 @@
 ;; Package-Version: 20160323
 ;; Keywords: project, convenience
 ;; Version: 0.0.2
+;; Package-Requires: ((emacs "24.3"))
 
 ;; Thanks to bertrand.lallau@gmail.com for refactor
 
