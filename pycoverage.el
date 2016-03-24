@@ -11,6 +11,10 @@
 
 ;; Thanks to bertrand.lallau@gmail.com for refactor
 
+;;; Code:
+
+(require 'cl-lib)
+
 (defconst pycoverage-mode-text " pycoverage(I)")
 ;; Need to figure out how to use these without errors
 (defconst pycoverage-cov2emacs-cmd "cov2emacs")
@@ -68,7 +72,7 @@
   ;; status like looks like this: SUCCESS:23
   ;; where 23 is percent of coverage
   (let* ((data (split-string line ":"))
-         (stat (first data)))
+         (stat (cl-first data)))
     (progn
       ;; set mode-line to error, others will overwrite
       (setq pycoverage-mode-text " pycov(...)")
@@ -76,7 +80,7 @@
     (when (equal stat "SUCCESS")
       (progn
         ;; update mode-line
-        (setq pycoverage-mode-text (format " pycov:%s%%" (second data)))
+        (setq pycoverage-mode-text (format " pycov:%s%%" (cl-second data)))
         (force-mode-line-update)))
     (when (equal stat "OLD")
       (progn
@@ -92,9 +96,9 @@
 (defun pycoverage-process-script-line (line)
   ;; line looks like this filepath:103:MISSING
   (let* ((data (split-string line ":"))
-         (path (first data))
-         (number (string-to-number (second data)))
-         (status (third data)))
+         (path (cl-first data))
+         (number (string-to-number (cl-second data)))
+         (status (cl-third data)))
     (when (equal status "MISSING")
       ;; add linenum to pycoverage-data
       (add-to-list 'pycoverage-data number))))
