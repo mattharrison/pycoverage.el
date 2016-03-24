@@ -175,6 +175,9 @@ def is_older(filename, other_mtime):
     mtime = os.stat(filename).st_mtime
     return mtime > other_mtime
 
+class OldFile(Exception):
+    pass
+
 def find_coverage_file(start_file, file_to_find='.coverage'):
     start_mtime = os.stat(start_file).st_mtime
     for parent in parent_dirs(start_file):
@@ -188,6 +191,7 @@ def find_coverage_file(start_file, file_to_find='.coverage'):
             return potential
         else:
             LOG.debug('OLDER: %s' % potential)
+            raise OldFile()
     return None
 
 
@@ -249,7 +253,6 @@ def main(prog_args):
     parser.add_option('-t', '--run-tests', action='store_true', help='run doctests')
     opt, args = parser.parse_args(prog_args)
 
-
     if opt.run_tests:
         _test()
         return
@@ -258,7 +261,11 @@ def main(prog_args):
         if opt.coverage_file:
             c2e = Coverage2Emacs(opt.coverage_file)
         elif opt.python_file:
-            cov = find_coverage_file(opt.python_file)
+            try:
+                cov = find_coverage_file(opt.python_file)
+            except OldFile:
+                sys.stderr.write("OLD")
+                return
             if cov:
                 c2e = Coverage2Emacs(cov)
         if c2e is None:
