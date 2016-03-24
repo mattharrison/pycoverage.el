@@ -67,8 +67,3 @@ Re-gen the ``.coverage`` file (ie by running tests with coverage turned on.) Run
 
 There is a ``.cov2emacs`` log file that should give hints as to what is going on
 
-# Links
-
-Forked from:
-
-    https://github.com/mattharrison/pycoverage.el
