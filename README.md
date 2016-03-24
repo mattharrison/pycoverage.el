@@ -2,6 +2,8 @@
 
 An emacs minor mode for reporting inline on coverage stats for Python
 
+![Screenshot](screenie.png)
+
 # Dependencies
 
 * python-coverage>=4.0
