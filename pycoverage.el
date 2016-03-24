@@ -16,8 +16,7 @@
 (defconst pycoverage-cov2emacs-cmd "cov2emacs")
 (defvar-local pycoverage-binary-installed nil) ; cov2emacs
 (defvar-local pycoverage-debug-message t)
-
-(make-variable-buffer-local 'pycoverage-data)
+(defvar-local pycoverage-data nil)
 
 ;;;###autoload
 (define-minor-mode pycoverage-mode
