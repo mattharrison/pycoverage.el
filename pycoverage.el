@@ -14,6 +14,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'linum)
 
 (defconst pycoverage-mode-text " pycoverage(I)")
 ;; Need to figure out how to use these without errors
@@ -28,14 +29,14 @@
   :lighter pycoverage-mode-text
   (if pycoverage-mode
       (progn
-         (add-hook 'after-save-hook 'pycoverage-on-change)
-         (setq pycoverage-binary-installed (pycoverage-exe-found pycoverage-cov2emacs-cmd))
-         (if (not pycoverage-binary-installed)
-             (error "Missing cov2emacs in PATH")
-           )
-	 (linum-mode t)
-         (setf linum-format 'pycoverage-line-format)
-	 (pycoverage-on-change))
+        (unless
+            (setq pycoverage-binary-installed
+                  (pycoverage-exe-found pycoverage-cov2emacs-cmd))
+          (error "Missing cov2emacs in PATH"))
+        (add-hook 'after-save-hook 'pycoverage-on-change nil t)
+        (linum-mode t)
+        (setf linum-format 'pycoverage-line-format)
+        (pycoverage-on-change))
     (setf linum-format 'dynamic)
     (remove-hook 'after-save-hook 'pycoverage-on-change)
     (linum-delete-overlays)))
@@ -51,52 +52,44 @@
       (message txt)))
 
 (defun pycoverage-on-change ()
-  (progn
-    (pycoverage-message "Running pycoverage")
-    (pycoverage-get-data (buffer-file-name))))
+  (pycoverage-message "Running pycoverage")
+  (pycoverage-get-data (buffer-file-name)))
 
 (defun pycoverage-get-data (filename)
   (let* ((result (pycoverage-run-better filename))
          (lines (split-string result "[\n]+")))
     (setq pycoverage-data nil)
-    (if result
-        (progn
-          ;; take status from first line
-          (pycoverage-process-status (car lines))
-          (mapcar (lambda (line)
-                    (if (not (equal line ""))
-                        (pycoverage-process-script-line line)))
-                  (cdr lines))))))
+    (when result
+      ;; take status from first line
+      (pycoverage-process-status (car lines))
+      (mapcar (lambda (line)
+                (unless (equal line "")
+                  (pycoverage-process-script-line line)))
+              (cdr lines)))))
 
 (defun pycoverage-process-status (line)
   ;; status like looks like this: SUCCESS:23
   ;; where 23 is percent of coverage
   (let* ((data (split-string line ":"))
          (stat (cl-first data)))
-    (progn
-      ;; set mode-line to error, others will overwrite
-      (setq pycoverage-mode-text " pycov(...)")
-      (force-mode-line-update))
+    (setq pycoverage-mode-text " pycov(...)")
+    (force-mode-line-update)
     (when (equal stat "SUCCESS")
-      (progn
-        ;; update mode-line
-        (setq pycoverage-mode-text (format " pycov:%s%%" (cl-second data)))
-        (force-mode-line-update)))
+      ;; update mode-line
+      (setq pycoverage-mode-text (format " pycov:%s%%" (cl-second data)))
+      (force-mode-line-update))
     (when (equal stat "OLD")
-      (progn
-        ;; update mode-line
-        (setq pycoverage-mode-text " pycov(OLD)")
-        (force-mode-line-update)))
+      ;; update mode-line
+      (setq pycoverage-mode-text " pycov(OLD)")
+      (force-mode-line-update))
     (when (equal stat "NO COVERAGE FILE")
-      (progn
-        ;; update mode-line
-        (setq pycoverage-mode-text " pycov(Err:no .coverage file)")
-        (force-mode-line-update)))))
+      ;; update mode-line
+      (setq pycoverage-mode-text " pycov(Err:no .coverage file)")
+      (force-mode-line-update))))
 
 (defun pycoverage-process-script-line (line)
   ;; line looks like this filepath:103:MISSING
   (let* ((data (split-string line ":"))
-         (path (cl-first data))
          (number (string-to-number (cl-second data)))
          (status (cl-third data)))
     (when (equal status "MISSING")
@@ -118,7 +111,7 @@
 
 (defun pycoverage-refresh ()
   "reload data for buffer"
-  (interactive )
+  (interactive)
   (pycoverage-get-data (buffer-file-name)))
 
 
