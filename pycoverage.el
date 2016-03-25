@@ -14,6 +14,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'linum)
 
 (defconst pycoverage-mode-text " pycoverage(I)")
 ;; Need to figure out how to use these without errors
