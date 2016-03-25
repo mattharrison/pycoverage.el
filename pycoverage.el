@@ -28,14 +28,14 @@
   :lighter pycoverage-mode-text
   (if pycoverage-mode
       (progn
-         (add-hook 'after-save-hook 'pycoverage-on-change)
-         (setq pycoverage-binary-installed (pycoverage-exe-found pycoverage-cov2emacs-cmd))
-         (if (not pycoverage-binary-installed)
-             (error "Missing cov2emacs in PATH")
-           )
-	 (linum-mode t)
-         (setf linum-format 'pycoverage-line-format)
-	 (pycoverage-on-change))
+        (unless
+            (setq pycoverage-binary-installed
+                  (pycoverage-exe-found pycoverage-cov2emacs-cmd))
+          (error "Missing cov2emacs in PATH"))
+        (add-hook 'after-save-hook 'pycoverage-on-change nil t)
+        (linum-mode t)
+        (setf linum-format 'pycoverage-line-format)
+        (pycoverage-on-change))
     (setf linum-format 'dynamic)
     (remove-hook 'after-save-hook 'pycoverage-on-change)
     (linum-delete-overlays)))
