@@ -20,10 +20,7 @@ Put something like this in your .emacs
       (when (derived-mode-p 'python-mode)
         (progn
           (linum-mode)
-          (pycoverage-mode)
-          )
-        )
-      )
+          (pycoverage-mode))))
 
 I like to create a per project virtualenv. Use pip to install cov2emacs
 in that virtualenv.
