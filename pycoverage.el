@@ -114,6 +114,31 @@
   (interactive)
   (pycoverage-get-data (buffer-file-name)))
 
+(defun pycoverage-next-uncovered ()
+  "Jump to the next uncovered line."
+  (interactive)
+  (if (not pycoverage-data)
+      nil
+    (let ((current-line (line-number-at-pos))
+          (target-line nil))
+      (dolist (lineno pycoverage-data)
+        (when (> lineno current-line)
+          (setq target-line lineno)))
+      (when target-line
+        (forward-line (- target-line current-line))))))
+
+(defun pycoverage-prev-uncovered ()
+  "Jump to the previous uncovered line."
+  (interactive)
+  (if (not pycoverage-data)
+      nil
+    (let ((current-line (line-number-at-pos))
+          (target-line nil))
+      (dolist (lineno pycoverage-data)
+        (when (and (not target-line) (< lineno current-line))
+          (setq target-line lineno)))
+      (when target-line
+        (forward-line (- target-line current-line))))))
 
 (provide 'pycoverage)
 
