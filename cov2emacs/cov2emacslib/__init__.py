@@ -6,7 +6,6 @@ import optparse
 import os
 import logging
 
-from coverage.report import Reporter
 from coverage.misc import CoverageException
 from coverage.control import Coverage
 from coverage.config import CoverageConfig
@@ -21,7 +20,7 @@ MISSED = 'Missed'
 logging.basicConfig(level=logging.DEBUG, filename='.cov2emacs.log')
 LOG = logging
 
-class BasicReporter(Reporter):
+class BasicReporter(object):
     """
     Hacked subclass of coverage.py Reporter that instead of actually
     doing anything just yields the data.
@@ -31,11 +30,10 @@ class BasicReporter(Reporter):
     """
     def __init__(self, report_file, ignore_errors=False):
         coverage = Coverage(report_file)
-        coverage.use_cache(True)
         coverage.load()
-        self.config = CoverageConfig()
 
-        super(BasicReporter, self).__init__(coverage, ignore_errors)
+        self.config = CoverageConfig()
+        self.coverage = coverage
 
     def report_filenames(self, filenames=None):
         filenames = filenames or []
